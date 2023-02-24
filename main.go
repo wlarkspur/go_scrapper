@@ -1,17 +1,36 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"learngo/mydict"
+)
 
-func superAdd(numbers ...int) int {
-	total := 0
-	for _, number := range numbers {
-		total += number
+/* type person struct {
+	name    string
+	age     int
+	favFood []string
+} */
 
-	}
-	return total
+/* func main() {
+	account := accounts.NewAccount("jack")
+	account.Deposit(10)
+
+	fmt.Println(account)
 }
+*/
 
 func main() {
-	result := superAdd(1, 2, 3, 4, 5, 6)
-	fmt.Println(result)
+	dictionary := mydict.Dictionary{"first": "First word"}
+	word := "Hello"
+	definition := "Greeting"
+	err := dictionary.Add(word, definition)
+	if err != nil {
+		fmt.Println(err)
+	}
+	hello, _ := dictionary.Search(word)
+	fmt.Println("Found", word, "definition:", hello)
+	err2 := dictionary.Add(word, definition)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
 }
