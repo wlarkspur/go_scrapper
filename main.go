@@ -26,6 +26,7 @@ func main() {
 		"https://www.facebook.com/",
 		"https://www.instagram.com/",
 		"https://academy.nomadcoders.co/",
+		"https://www.naver.com",
 	}
 
 	for _, url := range urls {
