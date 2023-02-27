@@ -1,52 +1,53 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
-type requestResult struct {
-	url    string
-	status string
-}
-
-var errRequestFailed = errors.New("Request Failed")
+var baseUrl string = "https://www.jobkorea.co.kr/Search/?stext=python"
 
 func main() {
-	results := make(map[string]string)
-	c := make(chan requestResult)
-	urls := []string{
-		"https://www.airbnb.com/",
-		"https://www.google.com/",
-		"https://www.amazon.com/",
-		"https://www.reddit.com/",
-		"https://www.google.com/",
-		"https://soundcloud.com/",
-		"https://www.facebook.com/",
-		"https://www.instagram.com/",
-		"https://academy.nomadcoders.co/",
-		"https://www.naver.com",
-	}
-
-	for _, url := range urls {
-		go hitUrl(url, c)
-	}
-	for i := 0; i < len(urls); i++ {
-		result := <-c
-		results[result.url] = result.status
-	}
-	for url, status := range results {
-		fmt.Println(url, status)
+	totalPages := getPages()
+	for i := 0; i <= totalPages; i++ {
+		getPage(i)
 	}
 }
 
-func hitUrl(url string, c chan<- requestResult) {
-	resp, err := http.Get(url)
-	status := "OK"
-	if err != nil || resp.StatusCode >= 400 {
-		status = "FAILED"
-	}
-	c <- requestResult{url: url, status: status}
+func getPage(page int) {
+	pageUrl := baseUrl + "&tabType=recruit&Page_No=" + strconv.Itoa(page)
+	fmt.Println("Requesting", pageUrl)
+}
 
+func getPages() int {
+	pages := 0
+	res, err := http.Get(baseUrl)
+	fmt.Println(res.StatusCode)
+	checkErr(err)
+	checkCode(res)
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	checkErr(err)
+
+	doc.Find(".tplPagination.newVer.wide").Each(func(i int, s *goquery.Selection) {
+		pages = s.Find("a").Length()
+	})
+	return pages
+}
+
+func checkErr(err error) {
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func checkCode(res *http.Response) {
+	if res.StatusCode != 200 {
+		log.Fatalln("Request failed with Status:", res.StatusCode)
+	}
 }
