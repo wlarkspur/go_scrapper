@@ -37,7 +37,12 @@ func main() {
 		jobs = append(jobs, extractedJob...)
 	}
 
-	writeJobs(jobs)
+	done := make(chan bool)
+	go func() {
+		writeJobs(jobs)
+		done <- true
+	}()
+	<-done
 	fmt.Println("Done, extracted", len(jobs))
 }
 
