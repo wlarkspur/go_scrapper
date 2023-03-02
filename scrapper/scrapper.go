@@ -22,6 +22,7 @@ type extractedJob struct {
 
 // Scrape JobKorea by a term
 func Scrape(term string) {
+
 	var baseUrl string = "https://www.jobkorea.co.kr/Search/?stext=" + term
 	var jobs []extractedJob
 	c := make(chan []extractedJob)
@@ -36,13 +37,13 @@ func Scrape(term string) {
 		extractedJob := <-c
 		jobs = append(jobs, extractedJob...)
 	}
-
-	done := make(chan bool)
+	writeJobs(jobs, term)
+	/* done := make(chan bool)
 	go func() {
-		writeJobs(jobs)
+
 		done <- true
 	}()
-	<-done
+	<-done */
 	fmt.Println("Done, extracted", len(jobs))
 }
 
@@ -112,7 +113,7 @@ func getPages(url string) int {
 	return pages
 }
 
-func writeJobs(jobs []extractedJob) {
+func writeJobs(jobs []extractedJob, term string) {
 	file, err := os.Create("jobs.csv")
 	checkErr(err)
 
@@ -129,7 +130,7 @@ func writeJobs(jobs []extractedJob) {
 	checkErr(wErr)
 
 	for _, job := range jobs {
-		jobSlice := []string{`https://www.jobkorea.co.kr/Recruit/GI_Read/` + job.id + `?Oem_Code=C1&logpath=1&stext=` + "러시아" + `&listno=`, job.company, job.title, job.exp, job.edu}
+		jobSlice := []string{`https://www.jobkorea.co.kr/Recruit/GI_Read/` + job.id + `?Oem_Code=C1&logpath=1&stext=` + term + `&listno=`, job.company, job.title, job.exp, job.edu}
 		jwErr := w.Write(jobSlice)
 		checkErr(jwErr)
 	}
